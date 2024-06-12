@@ -1,0 +1,11 @@
+# Binaries & logs
+*.exe
+*.exe~
+*.bin
+*.bin~
+*.wasm
+*.log
+
+# Dependencies
+vendor/
+web/wasm_exec.js
