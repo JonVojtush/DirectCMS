@@ -1,48 +1,27 @@
 <!DOCTYPE html>
-<html lang="en">
+<!-- 
+    !BUG: contents is aligned righ, I only want the container to be next in horizontal order. The text should remain left aligned
+-->
+<!-- Styling & Functions for independent page building -->
+<link rel="stylesheet" href="../../web/bootstrap.min.css">
+<link rel="stylesheet" href="../../web/styles.css">
+<script src="../../web/wasm_exec.js" defer></script>
+<script src="../../web/bootstrap.bundle.min.js" defer></script>
+<script src="../../web/scripts.js" defer></script>
 
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1">
-        <link rel="icon" href="../../web/favicon.png" type="image/png">
-        <link rel="stylesheet" href="../../web/bootstrap.min.css">
-        <link rel="stylesheet" href="../../web/styles.css">
-        <script src="../../web/wasm_exec.js" defer></script>
-        <script src="../../web/bootstrap.bundle.min.js" defer></script>
-        <script src="../../web/scripts.js" defer></script>
-        
-        <title>Template</title>
-        <meta name="description" content="">
-        <meta name="author" content="Jonathan Vojtush">
-        <meta name="keywords" content="">
-    </head>
+<!-- Post specific SEO which will be injected into the index.html's head contents -->
+<head>
+    <title>Template</title>
+    <meta name="description" content="">
+    <meta name="author" content="Jonathan Vojtush">
+    <meta name="keywords" content="">
+</head>
 
-    <body class="container-fluid vh-100 position-relative" data-bs-theme="dark">
-        <header class="sticky-top text-bg-dark">
-            <img src="../../web/favicon.png" alt="logo" tabindex="-1" id="logo">
-            <h1 class="visually-hidden">DirectCMS</h1>
-            <nav>
-                <ul class="nav">
-                    <li class="nav-item">
-                        <a class="nav-link" href="/">Home</a>
-                    </li>
-                </ul>
-            </nav>
-        </header>
-        <hr>
-        <aside class="float-start">
-          Sidebar with array of posts by category (with homepage at the top). If 
-        </aside>
-        <main class="text-bg-light float-end">
+<!-- INNER contents of main will be injected into the main element of index.html creating a progressive web app experience -->
+<body class="container-fluid vh-100 position-relative" data-bs-theme="dark">
+    <main class="text-bg-light float-end">
 
-            Success!
+        Success!
 
-        </main>
-        <hr>
-        <footer class="text-bg-dark sticky-bottom">
-            <a href="http://jigsaw.w3.org/css-validator/check/referer">
-                <span class="visually-hidden">Valid CSS!</span>
-            </a>
-        </footer>
-    </body>
-</html>
+    </main>
+</body>

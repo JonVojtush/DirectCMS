@@ -1,4 +1,10 @@
 <!DOCTYPE html>
+<!-- 
+    TODO: Add Variable Page Title to head>title
+    TODO: Add Variable Site Title to head>title
+    TODO: Build array of POST <a> based on POST count
+    TODO: Inject contents of template.html>main_&_head into index.html>main_&_head
+-->
 <html lang="en">
 
     <head>
@@ -11,37 +17,36 @@
         <script src="bootstrap.bundle.min.js" defer></script>
         <script src="scripts.js" defer></script>
         
-        <title>_</title>
+        <!-- Post specific SEO will be injected here -->
+        <title> | </title>
         <meta name="description" content="">
         <meta name="author" content="">
         <meta name="keywords" content="">
     </head>
 
     <body class="container-fluid vh-100 position-relative" data-bs-theme="dark">
-        <header class="sticky-top text-bg-dark">
+        <header class="sticky-top text-bg-dark text-center pt-3">
             <img src="favicon.png" alt="logo" tabindex="-1" id="logo">
             <h1 class="visually-hidden">DirectCMS</h1>
+        </header>
+        <hr>
+        <aside class="float-start text-center">
             <nav>
                 <ul class="nav">
                     <li class="nav-item">
                         <!-- <a class="nav-link" href="/">If Home</a> -->
                         <!-- <hr> -->
-                        <a class="nav-link" href="/POST">Post loop (recent -)</a>
+                        <!-- <a class="nav-link" href="/POST">Post loop (recent -)</a> -->
                     </li>
                 </ul>
             </nav>
-        </header>
-        <hr>
-        <aside class="float-start">
-          Sidebar with array of posts by category (with homepage at the top). If 
         </aside>
         <main class="text-bg-light float-end">
-
-            _
-
+            <!-- INNER contents of post(s) will be injected here, creating a progressive web app experience -->
         </main>
         <hr>
-        <footer class="text-bg-dark sticky-bottom">
+        <footer class="text-bg-dark sticky-bottom text-center">
+            Copyright
             <a href="http://jigsaw.w3.org/css-validator/check/referer">
                 <span class="visually-hidden">Valid CSS!</span>
             </a>
