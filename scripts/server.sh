@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ../web || exit 1;
 
-python3 -m http.server "3380" & PID=$!;
+python3 -m http.server "8080" & PID=$!;
 
 sleep 2; # Make sure http-server has enough time to start.
 

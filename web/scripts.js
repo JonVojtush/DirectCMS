@@ -3,35 +3,44 @@
 let wasm;
 const go = new Go();
 
+async function fetchPost(postId) {
+  try {
+    const response = await fetch(`/posts/${postId}/content.md`);
+    if (!response.ok) {
+      // Your existing JavaScript code for handling non-OK responses goes here
+      const postContainer = document.getElementById('post-container');
+      if (postContainer) {
+        postContainer.innerHTML = '<p>Loading...</p>';
+      } else {
+        console.error('Failed to fetch posts');
+      }
+    } else {
+      // Handle the successful response here
+      const data = await response.text();
+      const postContainer = document.getElementById('post-container');
+      if (postContainer) {
+        postContainer.innerHTML = data;
+      } else {
+        console.error('No container to display the post.');
+      }
+    }
+  } catch (error) {
+    // Handle any errors that occur during the fetch operation or in the try block itself
+    console.error('Error fetching the post:', error);
+  } finally {
+    // This block will run whether the function completes successfully, throws an error, or is rejected
+    console.log('Fetch operation completed.');
+  }
+};
+
 //function setEventListeners() {}
-
-function renderPostContent(content) {
-  // Parse and render markdown content using a library like marked.js
-  const renderedContent = marked.parse(content);
-  document.getElementById('post-content').innerHTML = renderedContent;
-}
-
-async function fetchPostContent(postId) {
-  const response = await fetch(`/posts/${postId}/content.md`);
-  return await response.text();
-}
-
-async function fetchMedia(postId, imageName) {
-  const response = await fetch(`/media/${postId}/${imageName}`);
-  const blob = await response.blob();
-  const url = URL.createObjectURL(blob);
-  return url;
-}
 
 function init(wasmObj) {
   go.run(wasmObj.instance);
-  //!fetchPostContent(postId)
-  //!fetchMedia(postId, imageName)
-  //! renderPostContent(content)
   //setEventListeners()
 }
 
-if ('instantiateStreaming' in WebAssembly) { 
+if ('instantiateStreaming' in WebAssembly) {
   WebAssembly.instantiateStreaming(fetch("go.wasm"), go.importObject).then(wasmObj => {
     init(wasmObj);
   })
@@ -41,6 +50,6 @@ if ('instantiateStreaming' in WebAssembly) {
   ).then(bytes =>
     WebAssembly.instantiate(bytes, go.importObject).then(wasmObj => {
       init(wasmObj);
-     })
-   )
+    })
+  )
 }
