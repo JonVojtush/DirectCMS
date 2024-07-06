@@ -1,14 +1,17 @@
 #!/bin/bash
-cd ../web || exit 1;
+cd ../web || { echo "Failed to cd into ../web"; exit 1; }
 
-python3 -m http.server "8080" & PID=$!;
+python -m http.server 8080 &
+PID=$!
 
-sleep 2; # Make sure http-server has enough time to start.
+# Wait a bit for the server to start
+for i in {1..5}; do
+    if ps -p "$PID" >/dev/null; then
+        echo "Success in $i seconds... Access at $(pwd)"
+        exit 0
+    fi
+    sleep 2
+done
 
-if ps -p "$PID" >/dev/null; then
-    echo "Success. Access at $(pwd)";
-else
-    echo "[Error] Could not start Python HTTP server." 1>&2;
-fi
-
-exit
+echo "[Error] Could not start Python HTTP server." 1>&2
+exit 1

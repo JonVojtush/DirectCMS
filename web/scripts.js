@@ -3,41 +3,51 @@
 let wasm;
 const go = new Go();
 
+// Function to fetch post content based on filename
 async function fetchPost(postId) {
   try {
     const response = await fetch(`/posts/${postId}/content.md`);
     if (!response.ok) {
-      // Your existing JavaScript code for handling non-OK responses goes here
-      const postContainer = document.getElementById('post-container');
-      if (postContainer) {
-        postContainer.innerHTML = '<p>Loading...</p>';
-      } else {
-        console.error('Failed to fetch posts');
-      }
-    } else {
-      // Handle the successful response here
-      const data = await response.text();
-      const postContainer = document.getElementById('post-container');
-      if (postContainer) {
-        postContainer.innerHTML = data;
-      } else {
-        console.error('No container to display the post.');
-      }
+      console.error('Failed to fetch the post:', response.status);
+      return;
     }
+    const data = await response.text();
+    displayPost(data, postId);
   } catch (error) {
-    // Handle any errors that occur during the fetch operation or in the try block itself
     console.error('Error fetching the post:', error);
-  } finally {
-    // This block will run whether the function completes successfully, throws an error, or is rejected
-    console.log('Fetch operation completed.');
   }
-};
+}
 
-//function setEventListeners() {}
+// Function to check for featured image or video and display it at the top of the post content
+function displayPost(content, postId) {
+  const postContainer = document.getElementById('post-container');
+  if (!postContainer) {
+    console.error('No container to display the post.');
+    return;
+  }
+
+  const hasFeaturedMedia = /featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)/i.test(postId);
+  let displayedContent = `<div id="post-content">${content}</div>`;
+  if (hasFeaturedMedia) {
+    const featuredImage = postId.match(/featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)/i)[0];
+    displayedContent = `<div id="post-media"><img src="/posts/${postId}/${featuredImage}" alt="Featured Media"></div><div id="post-content">${content}</div>`;
+  }
+  postContainer.innerHTML = displayedContent;
+}
+
+function setEventListeners() {
+  document.addEventListener("DOMContentLoaded", function () {
+    // Automatically load the home page by default
+    fetchPost('home');
+
+    // Build the sidebar navigation on DOMContentLoaded
+    buildSidebar();
+  });
+}
 
 function init(wasmObj) {
   go.run(wasmObj.instance);
-  //setEventListeners()
+  setEventListeners();
 }
 
 if ('instantiateStreaming' in WebAssembly) {
