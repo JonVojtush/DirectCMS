@@ -9,8 +9,8 @@
       "type": "chrome",
       "request": "launch",
       "preLaunchTask": "clean+build",
-      "url": "http://localhost:3380/web/index.html",
-      "webRoot": "http://localhost:3380/web",
+      "url": "http://localhost:8080/web/index.html",
+      "webRoot": "http://localhost:8080/web",
     }
   ]
 }
