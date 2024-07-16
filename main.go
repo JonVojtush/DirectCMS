@@ -14,19 +14,13 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	//"syscall/js"
 )
-
-/*var (
-	document = js.Global().Get("document")
-	console  = js.Global().Get("console")
-)*/
 
 func servePost(w http.ResponseWriter, r *http.Request) {
 	// Extract postId from the request URL
 	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 3 {
-		http.NotFound(w, r) // BaseURL, posts, postid
+	if len(parts) < 3 { // BaseURL, posts, postid
+		http.NotFound(w, r)
 		return
 	}
 	postId := parts[2]
@@ -45,21 +39,18 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 	// Serve the markdown content
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
 	content, err := os.ReadFile(contentPath)
-	if err == nil {
-		w.Write(content)
-	} else {
+	if err != nil {
 		http.Error(w, "Failed to read content file", http.StatusInternalServerError)
 		return
 	}
+	w.Write(content)
 
 	// List and serve media files in the post directory
 	mediaFiles, err := os.ReadDir(mediaDir)
 	if err == nil {
 		for _, file := range mediaFiles {
-			if !file.IsDir() && strings.HasSuffix(file.Name(), ".jpg") || strings.HasSuffix(file.Name(), ".png") || strings.HasSuffix(file.Name(),
-				".mp4") {
-				mediaPath := filepath.Join("posts", postId, file.Name())
-				http.ServeFile(w, r, mediaPath)
+			if !file.IsDir() && strings.HasSuffix(file.Name(), ".jpg") || strings.HasSuffix(file.Name(), ".png") || strings.HasSuffix(file.Name(), ".mp4") {
+				http.ServeFile(w, r, filepath.Join(mediaDir, file.Name()))
 			}
 		}
 	}
