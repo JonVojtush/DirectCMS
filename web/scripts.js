@@ -3,21 +3,6 @@
 let wasm;
 const go = new Go();
 
-// Function to fetch post content based on filename
-async function fetchPost(postId) {
-  try {
-    const response = await fetch(`/posts/${postId}/content.md`);
-    if (!response.ok) {
-      console.error('Failed to fetch the post:', response.status);
-      return;
-    }
-    const data = await response.text();
-    displayPost(data, postId);
-  } catch (error) {
-    console.error('Error fetching the post:', error);
-  }
-}
-
 // Function to check for featured image or video and display it at the top of the post content
 function displayPost(content, postId) {
   const postContainer = document.getElementById('post-container');
@@ -27,21 +12,25 @@ function displayPost(content, postId) {
   }
 
   const hasFeaturedMedia = /featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)/i.test(postId);
-  let displayedContent = `<div id="post-content">${content}</div>`;
+  let displayedContent;
   if (hasFeaturedMedia) {
     const featuredImage = postId.match(/featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)/i)[0];
     displayedContent = `<div id="post-media"><img src="/posts/${postId}/${featuredImage}" alt="Featured Media"></div><div id="post-content">${content}</div>`;
   }
+  displayedContent + `<div id="post-content">${content}</div>`;
   postContainer.innerHTML = displayedContent;
 }
 
+//! function buildNav();
+
 function setEventListeners() {
   document.addEventListener("DOMContentLoaded", function () {
+    let postList = fetchPostList();
+    buildNav(postList);
+
     // Automatically load the home page by default
     fetchPost('home');
-
-    // Build the sidebar navigation on DOMContentLoaded
-    buildSidebar();
+    displayPost('home');
   });
 }
 

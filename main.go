@@ -1,4 +1,5 @@
 /*
+	https://marketplace.visualstudio.com/items?itemName=aaron-bond.better-comments
 	TODO: **Sitemap**: Generate a sitemap that lists all post URLs and media files. You can use tools like `go-sitemap-generator` to generate a sitemap dynamically.
 	TODO: **Robots.txt**: Configure your server's `robots.txt` file to disallow crawling of media files but allow indexing of post pages.
 			User-agent: *
@@ -14,7 +15,28 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"syscall/js"
 )
+
+type Post struct {
+	Title string `json:"Title"`
+	ID    string `json:"ID"`
+}
+
+// Helper function to convert Post to JS Object
+func goStruct2jsObject(s Post) js.Value {
+	obj := js.Global().Get("Object").New()
+	obj.Set("Title", js.ValueOf(s.Title))
+	obj.Set("ID", js.ValueOf(s.ID))
+	return obj
+}
+
+func fetchPostList() interface{} { // this js.Value, args []js.Value
+	array := js.Global().Get("Array").New() // Create an array to hold the objects
+	//! populate array of structs with details pertaining to posts that exist in server-side posts directory
+	//! for each post in posts: array.SetIndex(i, goStruct2jsObject(post))
+	return array
+}
 
 func servePost(w http.ResponseWriter, r *http.Request) {
 	// Extract postId from the request URL
@@ -57,7 +79,8 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	js.Global().Set("fetchPostList", func() interface{} { return fetchPostList() }) // Allow Javascript to call fetchPostList() which will return an array
 	http.HandleFunc("/posts/", servePost)
 	http.ListenAndServe(":8080", nil)
-	select {} // a `select` statement at the end of the `main()` function. This is necessary to prevent the Go program from exiting, as the WebAssembly binary will be terminated when the Go program exits.
+	//? select {} // a `select` statement at the end of the `main()` function. This is necessary to prevent the Go program from exiting, as the WebAssembly binary will be terminated when the Go program exits.
 }
