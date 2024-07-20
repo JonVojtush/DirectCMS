@@ -11,34 +11,89 @@
 package main
 
 import (
+	"io/fs"
+	"log"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
 	"syscall/js"
+	"time"
 )
 
 type Post struct {
-	Title string `json:"Title"`
-	ID    string `json:"ID"`
+	Title       string    `json:"Title"`
+	ID          string    `json:"ID"`
+	LastUpdated time.Time `json:"Updated"`
 }
 
-// Helper function to convert Post to JS Object
-func goStruct2jsObject(post Post) js.Value {
-	obj := js.Global().Get("Object").New()
-	obj.Set("Title", js.ValueOf(post.Title))
-	obj.Set("ID", js.ValueOf(post.ID))
-	return obj
+func newPost(postTitle string) Post {
+	var (
+		post            Post
+		contentFileInfo fs.FileInfo
+		err             error
+	)
+
+	post.Title = postTitle
+	post.ID = strings.ReplaceAll(post.Title, " ", "_")
+
+	if contentFileInfo, err = os.Stat("posts/" + post.Title); err != nil {
+		log.Fatal("Could not read the file: " + err.Error())
+	}
+	post.LastUpdated = contentFileInfo.ModTime()
+
+	return post
 }
 
-func fetchPostList() js.Value {
-	array := js.Global().Get("Array").New() // Create an array to hold the objects
-	//! populate array of structs with details pertaining to posts that exist in server-side posts directory
-	//! for each post in posts: array.SetIndex(i, goStruct2jsObject(post))
-	return array
+func convertPost2JS(post interface{}) js.Value {
+	jsObj := js.Global().Get("Object").New()
+	for key, value := range post.(map[string]interface{}) {
+		jsObj.Set(key, js.ValueOf(value))
+	}
+	return jsObj
+}
+
+func builPostList() []Post {
+	var (
+		postList []Post
+		err      error
+	)
+
+	if err = filepath.Walk("posts", func(path string, info fs.FileInfo, err error) error {
+		if err != nil {
+			return err
+		}
+
+		if info.IsDir() {
+			postTitle := filepath.Base(path)
+			postList = append(postList, newPost(postTitle))
+		}
+
+		return nil
+	}); err != nil {
+		log.Fatal("Error walking the posts directory: ", err)
+	}
+
+	return postList
+}
+
+func fetchPostList(postList []Post) js.Value {
+	jsPostList := js.Global().Get("Array").New() // Create an array to hold the objects
+
+	for _, post := range postList {
+		jsPost := convertPost2JS(post)
+		jsPostList.SetIndex(jsPostList.Length(), jsPost)
+	}
+	return jsPostList
 }
 
 func servePost(w http.ResponseWriter, r *http.Request) {
+	var (
+		content    []byte
+		err        error
+		mediaFiles []fs.DirEntry
+	)
+
 	// Extract postId from the request URL
 	parts := strings.Split(r.URL.Path, "/")
 	if len(parts) < 3 { // BaseURL, posts, postid
@@ -52,24 +107,21 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 	mediaDir := filepath.Join("posts", postId)
 
 	// Check if the content file exists
-	_, err := os.Stat(contentPath)
-	if os.IsNotExist(err) {
+	if _, err = os.Stat(contentPath); os.IsNotExist(err) {
 		http.NotFound(w, r)
 		return
 	}
 
 	// Serve the markdown content
 	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
-	content, err := os.ReadFile(contentPath)
-	if err != nil {
+	if content, err = os.ReadFile(contentPath); err != nil {
 		http.Error(w, "Failed to read content file", http.StatusInternalServerError)
 		return
 	}
 	w.Write(content)
 
 	// List and serve media files in the post directory
-	mediaFiles, err := os.ReadDir(mediaDir)
-	if err == nil {
+	if mediaFiles, err = os.ReadDir(mediaDir); err == nil {
 		for _, file := range mediaFiles {
 			if !file.IsDir() && strings.HasSuffix(file.Name(), ".jpg") || strings.HasSuffix(file.Name(), ".png") || strings.HasSuffix(file.Name(), ".mp4") {
 				http.ServeFile(w, r, filepath.Join(mediaDir, file.Name()))
@@ -79,11 +131,14 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
-	js.Global().Set("fetchPostList", func() js.Value { return fetchPostList() }) // Allow Javascript to call fetchPostList() which will return an array
+	postList := builPostList()
+	js.Global().Set("fetchPostList", func() js.Value { return fetchPostList(postList) }) // Allow Javascript to call fetchPostList() which will return an array
 	http.HandleFunc("/posts/", servePost)
-	http.ListenAndServe(":8080", nil)
+	if err := http.ListenAndServe(":8080", nil); err != nil {
+		log.Fatalf("Failed to start server: %v", err)
+	}
 	/*
 		! Advised by AI: select {} // a `select` statement at the end of the `main()` function. This is necessary to prevent the Go program from exiting, as the WebAssembly binary will be terminated when the Go program exits.
-		? May not be necessary since Go is compiled to WASM. There would be no need to keep go running... not sure.
+		? May not be necessary since Go is compiled to WASM. There would be no need to keep go running... I am not sure.
 	*/
 }
