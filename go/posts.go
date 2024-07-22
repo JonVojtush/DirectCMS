@@ -1,13 +1,3 @@
-/*
-	https://marketplace.visualstudio.com/items?itemName=aaron-bond.better-comments
-	TODO: **Sitemap**: Generate a sitemap that lists all post URLs and media files. You can use tools like `go-sitemap-generator` to generate a sitemap dynamically.
-	TODO: **Robots.txt**: Configure your server's `robots.txt` file to disallow crawling of media files but allow indexing of post pages.
-			User-agent: *
-			Disallow: /media/
-			Allow: /posts/
-			Sitemap: https://yourdomain.com/sitemap.xml
-*/
-
 package main
 
 import (
@@ -21,10 +11,19 @@ import (
 	"time"
 )
 
+type MetaData struct {
+	Title       string   `json:"Title"`
+	Description string   `json:"Description"`
+	Keywords    []string `json:"Keywords"`
+	Author      string   `json:"Author"`
+}
+
 type Post struct {
 	Title       string    `json:"Title"`
 	ID          string    `json:"ID"`
 	LastUpdated time.Time `json:"Updated"`
+	Media       []string  `json:"Media"`
+	MetaData    MetaData  `json:"MetaData"`
 }
 
 func newPost(postTitle string) Post {
@@ -35,7 +34,7 @@ func newPost(postTitle string) Post {
 	)
 
 	post.Title = postTitle
-	post.ID = strings.ReplaceAll(post.Title, " ", "_")
+	post.ID = strings.ReplaceAll(strings.ToLower(post.Title), " ", "%20") // match URL
 
 	if contentFileInfo, err = os.Stat("posts/" + post.Title); err != nil {
 		log.Fatal("Could not read the file: " + err.Error())
@@ -43,14 +42,6 @@ func newPost(postTitle string) Post {
 	post.LastUpdated = contentFileInfo.ModTime()
 
 	return post
-}
-
-func convertPost2JS(post interface{}) js.Value {
-	jsObj := js.Global().Get("Object").New()
-	for key, value := range post.(map[string]interface{}) {
-		jsObj.Set(key, js.ValueOf(value))
-	}
-	return jsObj
 }
 
 func builPostList() []Post {
@@ -75,6 +66,14 @@ func builPostList() []Post {
 	}
 
 	return postList
+}
+
+func convertPost2JS(post interface{}) js.Value {
+	jsObj := js.Global().Get("Object").New()
+	for key, value := range post.(map[string]interface{}) {
+		jsObj.Set(key, js.ValueOf(value))
+	}
+	return jsObj
 }
 
 func fetchPostList(postList []Post) js.Value {
@@ -128,17 +127,4 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 	}
-}
-
-func main() {
-	postList := builPostList()
-	js.Global().Set("fetchPostList", func() js.Value { return fetchPostList(postList) }) // Allow Javascript to call fetchPostList() which will return an array
-	http.HandleFunc("/posts/", servePost)
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		log.Fatalf("Failed to start server: %v", err)
-	}
-	/*
-		! Advised by AI: select {} // a `select` statement at the end of the `main()` function. This is necessary to prevent the Go program from exiting, as the WebAssembly binary will be terminated when the Go program exits.
-		? May not be necessary since Go is compiled to WASM. There would be no need to keep go running... I am not sure.
-	*/
 }

@@ -1,0 +1,10 @@
+{
+  "meta": {
+    "title": "DirectCMS",
+    "description": "Another blogging framework.",
+    "keywords": [
+      "blogging-framework"
+    ],
+    "author": "Jonathan Vojtush"
+  }
+}

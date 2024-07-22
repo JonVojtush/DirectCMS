@@ -1,7 +1,7 @@
 #!/bin/bash
 cd ../
 
-LOG_FILE="web/wasmBuild.log"
+LOG_FILE="scripts/wasmBuild.log"
 touch $LOG_FILE 2>&1 | tee /dev/stderr
 echo "Script started at: $(date)" | tee -a $LOG_FILE
 
@@ -18,8 +18,13 @@ else
 fi
 
 # Compile Go code to WebAssembly
-echo "Building a new file..." | tee -a $LOG_FILE  
-GOOS=js GOARCH=wasm go build -o=web/go.wasm -buildvcs=false 2>&1 | tee -a $LOG_FILE >&2  
+echo "Building a new file..." | tee -a $LOG_FILE
+GOOS=js GOARCH=wasm go build -o=web/go.wasm -buildvcs=false go/main.go 2>&1 | tee -a $LOG_FILE >&2
+status=$?
+if [ $status -ne 0 ]; then
+    echo "Failed to build web/go.wasm" | tee -a $LOG_FILE >&2
+    exit 1
+fi
 echo "web/go.wasm was built." | tee -a $LOG_FILE
 
 # Remove wasm_exec.js

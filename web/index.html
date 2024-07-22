@@ -4,43 +4,34 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta robots="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
     <link rel="icon" href="favicon.png" type="image/png">
     <link rel="stylesheet" href="bootstrap.min.css"> <!-- v5.3.3 -->
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="custom.css">
     <script src="wasm_exec.js" defer></script> <!-- from $GOROOT/misc/wasm/wasm_exec.js when goLang v1.22.4 -->
     <script src="bootstrap.bundle.min.js" defer></script> <!-- v5.3.3 -->
     <script src="scripts.js" defer></script>
-
-    <!-- Post specific SEO will be injected here -->
-    <title>|</title>
+    <script src="custom.js" defer></script>
+    <title></title>
     <meta name="description" content="">
-    <meta name="author" content="">
     <meta name="keywords" content="">
+    <meta name="author" content="">
 </head>
 
 <body class="container-fluid vh-100 position-relative" data-bs-theme="dark">
-    <header class="sticky-top text-bg-dark text-center pt-3">
-        <img src="favicon.png" alt="logo" tabindex="-1" id="logo">
-        <h1 class="visually-hidden">DirectCMS</h1>
-    </header>
+    <header class="sticky-top text-bg-dark text-center pt-3"></header>
     <hr>
-    <aside class="float-start text-center">
+    <aside class="float-start text-center" id="nav">
         <nav>
-            <ul class="nav flex-column">
-                <!-- Navigation items will be inserted here -->
-            </ul>
+            <ul class="nav flex-column"></ul>
         </nav>
     </aside>
-    <main class="text-bg-light float-end">
-        <!-- INNER contents of post(s) will be injected here, creating a progressive web app experience -->
-    </main>
+    <main class="text-bg-light float-end"></main>
+    <aside class="float-end text-center" id="sidebar">
+    </aside>
     <hr>
-    <footer class="text-bg-dark sticky-bottom text-center">
-        Copyright &copy; 2023. All rights reserved.
-        <a href="http://jigsaw.w3.org/css-validator/check/referer" title="Validate the CSS!" target="_blank"
-            rel="noopener noreferrer">
-            <span class="visually-hidden">Valid CSS!</span>
-        </a>
-    </footer>
+    <footer class="text-bg-dark sticky-bottom text-center"></footer>
 </body>
 
 </html>

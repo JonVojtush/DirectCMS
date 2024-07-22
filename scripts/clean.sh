@@ -2,7 +2,7 @@
 cd ../
 
 # Remove build resources
-rm web/go.wasm web/wasm_exec.js wasmBuild.log
+rm web/go.wasm web/wasm_exec.js scripts/wasmBuild.log
 echo "Build resources cleaned"
 
 # Check if first argument is "go", then clean go environment
