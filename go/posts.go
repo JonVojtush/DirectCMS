@@ -1,11 +1,13 @@
 package main
 
 import (
+	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strings"
 	"syscall/js"
 	"time"
@@ -24,6 +26,7 @@ type Post struct {
 	LastUpdated time.Time `json:"Updated"`
 	Media       []string  `json:"Media"`
 	MetaData    MetaData  `json:"MetaData"`
+	Content     string    `json:"Content"`
 }
 
 func newPost(postTitle string) Post {
@@ -52,7 +55,7 @@ func builPostList() []Post {
 
 	if err = filepath.Walk("posts", func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
-			return err
+			log.Fatal("Error(1) walking the posts directory: ", err)
 		}
 
 		if info.IsDir() {
@@ -62,28 +65,10 @@ func builPostList() []Post {
 
 		return nil
 	}); err != nil {
-		log.Fatal("Error walking the posts directory: ", err)
+		log.Fatal("Error(2) walking the posts directory: ", err)
 	}
 
 	return postList
-}
-
-func convertPost2JS(post interface{}) js.Value {
-	jsObj := js.Global().Get("Object").New()
-	for key, value := range post.(map[string]interface{}) {
-		jsObj.Set(key, js.ValueOf(value))
-	}
-	return jsObj
-}
-
-func fetchPostList(postList []Post) js.Value {
-	jsPostList := js.Global().Get("Array").New() // Create an array to hold the objects
-
-	for _, post := range postList {
-		jsPost := convertPost2JS(post)
-		jsPostList.SetIndex(jsPostList.Length(), jsPost)
-	}
-	return jsPostList
 }
 
 func servePost(w http.ResponseWriter, r *http.Request) {
@@ -91,11 +76,11 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 		content    []byte
 		err        error
 		mediaFiles []fs.DirEntry
+		parts      []string
 	)
 
 	// Extract postId from the request URL
-	parts := strings.Split(r.URL.Path, "/")
-	if len(parts) < 3 { // BaseURL, posts, postid
+	if parts = strings.Split(r.URL.Path, "/"); len(parts) < 3 { // BaseURL, posts, postid
 		http.NotFound(w, r)
 		return
 	}
@@ -128,3 +113,51 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
+
+// Function to check for featured image or video and display it at the top of the post content
+func displayPost(post Post) {
+	var (
+		postContainer    js.Value
+		hasFeaturedMedia bool
+		displayedContent string
+		matched          bool
+	)
+
+	if postContainer = document.Call("getElementById", "post-container"); postContainer.IsUndefined() {
+		fmt.Println("No container to display the post.")
+		return
+	}
+
+	// Check if the postId contains featured media
+	if matched, _ = regexp.MatchString(`featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)`, post.ID); matched {
+		hasFeaturedMedia = true
+	}
+
+	if hasFeaturedMedia {
+		// Extract the featured media file name
+		re := regexp.MustCompile(`featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)`)
+		featuredImage := re.FindString(post.ID)
+		displayedContent = `<div id="post-media"><img src="/posts/` + post.ID + `/` + featuredImage + `" alt="Featured Media"></div>`
+	}
+	// Append the content to displayedContent
+	displayedContent += `<div id="post-content">` + post.Content + `</div>`
+	postContainer.Set("innerHTML", displayedContent)
+}
+
+/* func convertPost2JS(post interface{}) js.Value {
+	jsObj := js.Global().Get("Object").New()
+	for key, value := range post.(map[string]interface{}) {
+		jsObj.Set(key, js.ValueOf(value))
+	}
+	return jsObj
+}
+
+func fetchPostList(postList []Post) js.Value {
+	jsPostList := js.Global().Get("Array").New() // Create an array to hold the objects
+
+	for _, post := range postList {
+		jsPost := convertPost2JS(post)
+		jsPostList.SetIndex(jsPostList.Length(), jsPost)
+	}
+	return jsPostList
+} */
