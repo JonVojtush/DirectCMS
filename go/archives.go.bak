@@ -1,0 +1,25 @@
+package archives
+
+import "syscall/js"
+
+func convertPost2JS(post interface{}) js.Value {
+	jsObj := js.Global().Get("Object").New()
+	for key, value := range post.(map[string]interface{}) {
+		jsObj.Set(key, js.ValueOf(value))
+	}
+	return jsObj
+}
+
+func fetchPostList(postList []Post) js.Value {
+	jsPostList := js.Global().Get("Array").New() // Create an array to hold the objects
+
+	for _, post := range postList {
+		jsPost := convertPost2JS(post)
+		jsPostList.SetIndex(jsPostList.Length(), jsPost)
+	}
+	return jsPostList
+}
+
+func main() {
+	js.Global().Set("fetchPostList", func() js.Value { return fetchPostList(postList) })
+}

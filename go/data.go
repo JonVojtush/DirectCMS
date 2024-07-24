@@ -1,15 +1,14 @@
+// TODO: Load content to post in buldpostList(). Then pass Post into servePost rather than fetching manually.
+
 package main
 
 import (
-	"fmt"
 	"io/fs"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
 	"strings"
-	"syscall/js"
 	"time"
 )
 
@@ -113,51 +112,3 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 }
-
-// Function to check for featured image or video and display it at the top of the post content
-func displayPost(post Post) {
-	var (
-		postContainer    js.Value
-		hasFeaturedMedia bool
-		displayedContent string
-		matched          bool
-	)
-
-	if postContainer = document.Call("getElementById", "post-container"); postContainer.IsUndefined() {
-		fmt.Println("No container to display the post.")
-		return
-	}
-
-	// Check if the postId contains featured media
-	if matched, _ = regexp.MatchString(`featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)`, post.ID); matched {
-		hasFeaturedMedia = true
-	}
-
-	if hasFeaturedMedia {
-		// Extract the featured media file name
-		re := regexp.MustCompile(`featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)`)
-		featuredImage := re.FindString(post.ID)
-		displayedContent = `<div id="post-media"><img src="/posts/` + post.ID + `/` + featuredImage + `" alt="Featured Media"></div>`
-	}
-	// Append the content to displayedContent
-	displayedContent += `<div id="post-content">` + post.Content + `</div>`
-	postContainer.Set("innerHTML", displayedContent)
-}
-
-/* func convertPost2JS(post interface{}) js.Value {
-	jsObj := js.Global().Get("Object").New()
-	for key, value := range post.(map[string]interface{}) {
-		jsObj.Set(key, js.ValueOf(value))
-	}
-	return jsObj
-}
-
-func fetchPostList(postList []Post) js.Value {
-	jsPostList := js.Global().Get("Array").New() // Create an array to hold the objects
-
-	for _, post := range postList {
-		jsPost := convertPost2JS(post)
-		jsPostList.SetIndex(jsPostList.Length(), jsPost)
-	}
-	return jsPostList
-} */
