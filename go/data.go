@@ -1,4 +1,4 @@
-// TODO: Load content to post in buldpostList(). Then pass Post into servePost rather than fetching manually.
+// TODO: Load content to post in newPost(). Then fetch within servePost() rather than fetching manually.
 
 package main
 
@@ -11,6 +11,8 @@ import (
 	"strings"
 	"time"
 )
+
+var postList []Post
 
 type MetaData struct {
 	Title       string   `json:"Title"`
@@ -46,11 +48,8 @@ func newPost(postTitle string) Post {
 	return post
 }
 
-func builPostList() []Post {
-	var (
-		postList []Post
-		err      error
-	)
+func builPostList() {
+	var err error
 
 	if err = filepath.Walk("posts", func(path string, info fs.FileInfo, err error) error {
 		if err != nil {
@@ -66,8 +65,6 @@ func builPostList() []Post {
 	}); err != nil {
 		log.Fatal("Error(2) walking the posts directory: ", err)
 	}
-
-	return postList
 }
 
 func servePost(w http.ResponseWriter, r *http.Request) {

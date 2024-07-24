@@ -3,13 +3,9 @@ package main
 import (
 	"log"
 	"net/http"
-	"syscall/js"
 )
 
-var document = js.Global().Get("document")
-
 func main() {
-	postList := builPostList()
 	http.HandleFunc("/posts/", servePost)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Failed to start server: %v", err)

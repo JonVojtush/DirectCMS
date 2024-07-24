@@ -7,6 +7,8 @@ import (
 	"syscall/js"
 )
 
+var document = js.Global().Get("document")
+
 // TODO: function buildNav();
 
 // Function to check for featured image or video and display it at the top of the post content
