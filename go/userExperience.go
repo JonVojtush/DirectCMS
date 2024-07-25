@@ -9,6 +9,10 @@ import (
 
 var document = js.Global().Get("document")
 
+func serveCustom(w http.ResponseWriter, r *http.Request) {
+	// TODO: Serve logo.*, sitemap.xml, custom.css, custom.js & logo.* to /root (web)
+}
+
 // TODO: function buildNav();
 
 // Function to check for featured image or video and display it at the top of the post content
@@ -39,8 +43,4 @@ func displayPost(post Post) {
 	// Append the content to displayedContent
 	displayedContent += `<div id="post-content">` + post.Content + `</div>`
 	postContainer.Set("innerHTML", displayedContent)
-}
-
-func serveCustom(w http.ResponseWriter, r *http.Request) {
-	// TODO: Serve logo.*, sitemap.xml, custom.css, custom.js & logo.* to /root (web)
 }

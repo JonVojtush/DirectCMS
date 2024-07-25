@@ -5,7 +5,6 @@ package main
 import (
 	"io/fs"
 	"log"
-	"net/http"
 	"os"
 	"path/filepath"
 	"strings"
@@ -45,6 +44,18 @@ func newPost(postTitle string) Post {
 	}
 	post.LastUpdated = contentFileInfo.ModTime()
 
+	// List and serve media files in the post directory
+	if mediaFiles, err := os.ReadDir(filepath.Join("posts", post.ID)); err == nil {
+		for _, file := range mediaFiles {
+			if !file.IsDir() && strings.HasSuffix(file.Name(), ".jpg") || strings.HasSuffix(file.Name(), ".png") || strings.HasSuffix(file.Name(), ".mp4") {
+				// TODO: Build an array of media file names with extensions. 0 should always be featured.jpg ifelse featured.png, if no make [0] nil.
+			}
+		}
+	}
+
+	// TODO: post.MetaData =
+	post.Content = filepath.Join("posts", post.ID, "content.md")
+
 	return post
 }
 
@@ -64,48 +75,5 @@ func builPostList() {
 		return nil
 	}); err != nil {
 		log.Fatal("Error(2) walking the posts directory: ", err)
-	}
-}
-
-func servePost(w http.ResponseWriter, r *http.Request) {
-	var (
-		content    []byte
-		err        error
-		mediaFiles []fs.DirEntry
-		parts      []string
-	)
-
-	// Extract postId from the request URL
-	if parts = strings.Split(r.URL.Path, "/"); len(parts) < 3 { // BaseURL, posts, postid
-		http.NotFound(w, r)
-		return
-	}
-	postId := parts[2]
-
-	// Construct the full path to the content and media files
-	contentPath := filepath.Join("posts", postId, "content.md")
-	mediaDir := filepath.Join("posts", postId)
-
-	// Check if the content file exists
-	if _, err = os.Stat(contentPath); os.IsNotExist(err) {
-		http.NotFound(w, r)
-		return
-	}
-
-	// Serve the markdown content
-	w.Header().Set("Content-Type", "text/markdown; charset=utf-8")
-	if content, err = os.ReadFile(contentPath); err != nil {
-		http.Error(w, "Failed to read content file", http.StatusInternalServerError)
-		return
-	}
-	w.Write(content)
-
-	// List and serve media files in the post directory
-	if mediaFiles, err = os.ReadDir(mediaDir); err == nil {
-		for _, file := range mediaFiles {
-			if !file.IsDir() && strings.HasSuffix(file.Name(), ".jpg") || strings.HasSuffix(file.Name(), ".png") || strings.HasSuffix(file.Name(), ".mp4") {
-				http.ServeFile(w, r, filepath.Join(mediaDir, file.Name()))
-			}
-		}
 	}
 }

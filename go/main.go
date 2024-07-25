@@ -6,7 +6,7 @@ import (
 )
 
 func main() {
-	http.HandleFunc("/posts/", servePost)
+	// http.HandleFunc("/posts/", servePost)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
