@@ -3,6 +3,7 @@
 package main
 
 import (
+	"fmt"
 	"io/fs"
 	"log"
 	"os"
@@ -14,47 +15,74 @@ import (
 var postList []Post
 
 type MetaData struct {
-	Title       string   `json:"Title"`
-	Description string   `json:"Description"`
-	Keywords    []string `json:"Keywords"`
-	Author      string   `json:"Author"`
+	Title       *string   `json:"Title"`
+	Description *string   `json:"Description"`
+	Keywords    []*string `json:"Keywords"`
+	Author      *string   `json:"Author"`
 }
 
 type Post struct {
-	Title       string    `json:"Title"`
-	ID          string    `json:"ID"`
-	LastUpdated time.Time `json:"Updated"`
-	Media       []string  `json:"Media"`
-	MetaData    MetaData  `json:"MetaData"`
-	Content     string    `json:"Content"`
+	Title       *string    `json:"Title"`
+	ID          *string    `json:"ID"`
+	LastUpdated *time.Time `json:"Updated"`
+	Media       []*string  `json:"Media"`
+	MetaData    *MetaData  `json:"MetaData"`
+	Content     *string    `json:"Content"`
 }
 
 func newPost(postTitle string) Post {
 	var (
 		post            Post
-		contentFileInfo fs.FileInfo
+		contentFileInfo os.FileInfo
 		err             error
+		mediaFileNames  []*string
 	)
 
-	post.Title = postTitle
-	post.ID = strings.ReplaceAll(strings.ToLower(post.Title), " ", "%20") // match URL
+	post.Title = &postTitle
+	postID := strings.ReplaceAll(strings.ToLower(*post.Title), " ", "%20") // match URL
+	post.ID = &postID
 
-	if contentFileInfo, err = os.Stat("posts/" + post.Title); err != nil {
+	if contentFileInfo, err = os.Stat("posts/" + *post.Title); err != nil {
 		log.Fatal("Could not read the file: " + err.Error())
 	}
-	post.LastUpdated = contentFileInfo.ModTime()
+	lastUpdated := contentFileInfo.ModTime()
+	post.LastUpdated = &lastUpdated
 
-	// List and serve media files in the post directory
-	if mediaFiles, err := os.ReadDir(filepath.Join("posts", post.ID)); err == nil {
+	mediaDirPath := filepath.Join("posts", *post.ID, "content.md") // Corrected to join multiple strings
+
+	if mediaFiles, err := os.ReadDir(mediaDirPath); err == nil { // Fixed the path in ReadDir
 		for _, file := range mediaFiles {
-			if !file.IsDir() && strings.HasSuffix(file.Name(), ".jpg") || strings.HasSuffix(file.Name(), ".png") || strings.HasSuffix(file.Name(), ".mp4") {
-				// TODO: Build an array of media file names with extensions. 0 should always be featured.jpg ifelse featured.png, if no make [0] nil.
+			if !file.IsDir() && (strings.HasSuffix(file.Name(), ".jpg") ||
+				strings.HasSuffix(file.Name(), ".png") ||
+				strings.HasSuffix(file.Name(), ".mp4")) {
+				fileName := file.Name()
+				mediaFileNames = append(mediaFileNames, &fileName)
 			}
 		}
-	}
 
-	// TODO: post.MetaData =
-	post.Content = filepath.Join("posts", post.ID, "content.md")
+		if len(mediaFileNames) > 0 {
+			featuredIndex := -1
+			for i, fileName := range mediaFileNames {
+				if *fileName == "featured.jpg" || *fileName == "featured.png" {
+					featuredIndex = i
+					break
+				}
+			}
+
+			if featuredIndex != -1 {
+				temp := *mediaFileNames[featuredIndex]
+				mediaFileNames[0], mediaFileNames[featuredIndex] = &temp, nil
+			} else {
+				mediaFileNames[0] = nil
+			}
+		} else {
+			mediaFileNames = []*string{nil}
+		}
+	} else {
+		fmt.Println("Error reading directory:", err)
+	}
+	post.Media = mediaFileNames
+	post.Content = filepath.Join("posts", *post.ID, "content.md")
 
 	return post
 }

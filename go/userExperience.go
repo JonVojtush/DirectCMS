@@ -30,17 +30,17 @@ func displayPost(post Post) {
 	}
 
 	// Check if the postId contains featured media
-	if matched, _ = regexp.MatchString(`featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)`, post.ID); matched {
+	if matched, _ = regexp.MatchString(`featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)`, *post.ID); matched {
 		hasFeaturedMedia = true
 	}
 
 	if hasFeaturedMedia {
 		// Extract the featured media file name
 		re := regexp.MustCompile(`featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)`)
-		featuredImage := re.FindString(post.ID)
-		displayedContent = `<div id="post-media"><img src="/posts/` + post.ID + `/` + featuredImage + `" alt="Featured Media"></div>`
+		featuredImage := re.FindString(*post.ID)
+		displayedContent = `<div id="post-media"><img src="/posts/` + *post.ID + `/` + featuredImage + `" alt="Featured Media"></div>`
 	}
 	// Append the content to displayedContent
-	displayedContent += `<div id="post-content">` + post.Content + `</div>`
+	displayedContent += `<div id="post-content">` + *post.Content + `</div>`
 	postContainer.Set("innerHTML", displayedContent)
 }
