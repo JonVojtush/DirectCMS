@@ -48,9 +48,9 @@ func newPost(postTitle string) Post {
 	lastUpdated := contentFileInfo.ModTime()
 	post.LastUpdated = &lastUpdated
 
-	mediaDirPath := filepath.Join("posts", *post.ID, "content.md") // Corrected to join multiple strings
+	mediaDirPath := filepath.Join("posts", *post.ID)
 
-	if mediaFiles, err := os.ReadDir(mediaDirPath); err == nil { // Fixed the path in ReadDir
+	if mediaFiles, err := os.ReadDir(mediaDirPath); err == nil {
 		for _, file := range mediaFiles {
 			if !file.IsDir() && (strings.HasSuffix(file.Name(), ".jpg") ||
 				strings.HasSuffix(file.Name(), ".png") ||
@@ -82,7 +82,8 @@ func newPost(postTitle string) Post {
 		fmt.Println("Error reading directory:", err)
 	}
 	post.Media = mediaFileNames
-	post.Content = filepath.Join("posts", *post.ID, "content.md")
+	contentPath := filepath.Join("posts", *post.ID, "content.md")
+	post.Content = &contentPath
 
 	return post
 }
