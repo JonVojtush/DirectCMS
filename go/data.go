@@ -59,15 +59,15 @@ func newPost(postTitle string) Post {
 	return post
 }
 
-func builPostList() {
+func buildPostList() {
 	var err error
 
-	if err = filepath.Walk("posts", func(path string, info fs.FileInfo, err error) error {
+	if err = filepath.WalkDir("posts", func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			log.Fatal("Error(1) walking the posts directory: ", err)
 		}
 
-		if info.IsDir() {
+		if entry.IsDir() {
 			postTitle := filepath.Base(path)
 			postList = append(postList, newPost(postTitle))
 		}
