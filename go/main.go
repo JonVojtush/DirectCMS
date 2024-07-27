@@ -7,8 +7,8 @@ import (
 
 func main() {
 	buildPostList()
-	http.HandleFunc("/", serveCustom)
-	http.HandleFunc("/posts/", serveAndDisplayPost)
+	http.HandleFunc("/", serveCustomResources)
+	http.HandleFunc("/posts/", servePost)
 	if err := http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}

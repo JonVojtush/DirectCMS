@@ -14,7 +14,12 @@ import (
 	"time"
 )
 
-var postList []Post
+var (
+	postList        []Post
+	imageExtensions = []string{"jpg", "jpeg", "png", "gif", "webp"}
+	videoExtensions = []string{"mp4", "avi", "mov", "webm"}
+	mediaExtensions = append(imageExtensions, videoExtensions...)
+)
 
 type MetaData struct {
 	Title       *string   `json:"Title"`
@@ -30,6 +35,26 @@ type Post struct {
 	MetaData    *MetaData  `json:"MetaData"`
 	Content     *string    `json:"Content"`
 	Media       []*string  `json:"Media"`
+}
+
+func serveCustomResources(w http.ResponseWriter, r *http.Request) {
+	// Define the base path for your static files
+	basePath := "/custom/"
+	files := []string{"logo.*", "sitemap.xml", "custom.css", "custom.js", "favicon.*"}
+
+	for _, file := range files {
+		filePath := filepath.Join(basePath, file)
+		if exists, err := pathExists(filePath); err == nil && exists {
+			http.ServeFile(w, r, filePath)
+			return
+		} else if err != nil {
+			log.Printf("Error checking existence of %s: %v", filePath, err)
+		}
+	}
+
+	// If no file is found, log the absence and send a 404 response
+	log.Println("None of the custom files exist")
+	http.NotFound(w, r)
 }
 
 func newPost(postTitle string) Post {
@@ -126,7 +151,7 @@ func buildPostList() {
 	}
 }
 
-func serveAndDisplayPost(w http.ResponseWriter, r *http.Request) {
+func servePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
 		mediaFiles []fs.DirEntry
@@ -172,8 +197,4 @@ func serveAndDisplayPost(w http.ResponseWriter, r *http.Request) {
 
 	// Serve and display the post by fetching it from the correct array element
 	displayPost(postList[postIndex])
-}
-
-func serveCustom(w http.ResponseWriter, r *http.Request) {
-	// TODO: Serve logo.*, sitemap.xml, custom.css, custom.js & logo.* to /root (web)
 }
