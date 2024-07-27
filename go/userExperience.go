@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"regexp"
 	"strings"
 	"syscall/js"
@@ -18,7 +19,6 @@ func displayPost(post Post) {
 		postContainer    js.Value
 		hasFeaturedMedia bool
 		displayedContent string
-		matched          bool
 	)
 
 	if postContainer = document.Call("getElementById", "post-container"); postContainer.IsUndefined() {
@@ -29,9 +29,9 @@ func displayPost(post Post) {
 	// Check if the postId contains featured media
 	for _, ext := range mediaExtensions {
 		re := regexp.MustCompile(`featured\.(\w+)`)
-		matched = re.MatchString(*post.ID)
-		if matched {
+		if re.MatchString(*post.ID) {
 			hasFeaturedMedia = true
+			log.Println("Featured media found with" + ext + "extension.")
 			break
 		}
 	}
