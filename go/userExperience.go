@@ -2,18 +2,15 @@ package main
 
 import (
 	"fmt"
-	"net/http"
 	"regexp"
+	"strings"
 	"syscall/js"
 )
 
-var document = js.Global().Get("document")
-
-func serveCustom(w http.ResponseWriter, r *http.Request) {
-	// TODO: Serve logo.*, sitemap.xml, custom.css, custom.js & logo.* to /root (web)
-}
-
-// TODO: function buildNav();
+var (
+	document        = js.Global().Get("document")
+	mediaExtensions = []string{"jpg", "jpeg", "png", "gif", "webp", "mp4", "avi", "mov", "webm"}
+)
 
 // Function to check for featured image or video and display it at the top of the post content
 func displayPost(post Post) {
@@ -30,17 +27,39 @@ func displayPost(post Post) {
 	}
 
 	// Check if the postId contains featured media
-	if matched, _ = regexp.MatchString(`featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)`, *post.ID); matched {
-		hasFeaturedMedia = true
+	for _, ext := range mediaExtensions {
+		re := regexp.MustCompile(`featured\.(\w+)`)
+		matched = re.MatchString(*post.ID)
+		if matched {
+			hasFeaturedMedia = true
+			break
+		}
 	}
 
 	if hasFeaturedMedia {
 		// Extract the featured media file name
-		re := regexp.MustCompile(`featured\.(jpg|jpeg|png|gif|webp|mp4|avi|mov|webm)`)
-		featuredImage := re.FindString(*post.ID)
-		displayedContent = `<div id="post-media"><img src="/posts/` + *post.ID + `/` + featuredImage + `" alt="Featured Media"></div>`
+		re := regexp.MustCompile(`featured\.(\w+)`)
+		matches := re.FindStringSubmatch(*post.ID)
+		if len(matches) > 1 {
+			featuredImage := "featured." + matches[1]
+			displayedContent = `<div id="post-media"><img src="/posts/` + *post.ID + `/` + featuredImage + `" alt="Featured Media"></div>`
+		}
 	}
 	// Append the content to displayedContent
-	displayedContent += `<div id="post-content">` + *post.Content + `</div>`
+	if len(displayedContent) == 0 {
+		displayedContent = `<div id="post-content">` + *post.Content + `</div>`
+	} else {
+		displayedContent += `<div id="post-content">` + *post.Content + `</div>`
+	}
 	postContainer.Set("innerHTML", displayedContent)
+}
+
+// isMediaFile checks if a file has one of the specified media extensions
+func isMediaFile(fileName string) bool {
+	for _, ext := range mediaExtensions {
+		if strings.HasSuffix(fileName, "."+ext) {
+			return true
+		}
+	}
+	return false
 }
