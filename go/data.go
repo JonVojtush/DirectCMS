@@ -1,5 +1,3 @@
-// TODO: Load content to post in newPost(). Then fetch within servePost() rather than fetching manually.
-
 package main
 
 import (
@@ -47,7 +45,7 @@ func serveCustomResources(w http.ResponseWriter, r *http.Request) {
 		if exists, err := pathExists(filePath); err == nil && exists {
 			http.ServeFile(w, r, filePath)
 			return
-		} else if err != nil {
+		} else {
 			log.Printf("Error checking existence of %s: %v", filePath, err)
 		}
 	}
@@ -64,6 +62,7 @@ func newPost(postTitle string) Post {
 		err            error
 		metaFile       []byte
 		metaData       MetaData
+		contentBytes   []byte
 	)
 
 	// post.Title
@@ -93,7 +92,11 @@ func newPost(postTitle string) Post {
 
 	// post.Content
 	contentPath := filepath.Join("posts", *post.ID, "content.md")
-	post.Content = &contentPath
+	if contentBytes, err = os.ReadFile(contentPath); err != nil {
+		fmt.Println("Error reading file:", err)
+	}
+	contentString := string(contentBytes)
+	post.Content = &contentString
 
 	// post.Media
 	mediaDirPath := filepath.Join("posts", *post.ID)
@@ -106,7 +109,6 @@ func newPost(postTitle string) Post {
 				mediaFileNames = append(mediaFileNames, &fileName)
 			}
 		}
-
 		if len(mediaFileNames) > 0 {
 			featuredIndex := -1
 			for i, fileName := range mediaFileNames {
@@ -133,8 +135,6 @@ func newPost(postTitle string) Post {
 }
 
 func buildPostList() {
-	var err error
-
 	if err = filepath.WalkDir("posts", func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			log.Fatal("Error(1) walking the posts directory: ", err)
@@ -174,7 +174,7 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	// If no post is found with the given postId, return a 404 Not Found
+	// If no post is found with the given postId
 	if postIndex == -1 {
 		http.NotFound(w, r)
 		return
