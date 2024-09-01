@@ -23,26 +23,6 @@ var (
 	mediaExtensions = append(imageExtensions, videoExtensions...)
 )
 
-func pathExists(path string) (bool, error) {
-	_, err := os.Stat(path)
-	if err == nil {
-		return true, nil
-	}
-	if os.IsNotExist(err) {
-		return false, nil
-	}
-	return false, err
-}
-
-func isMediaFile(fileName string) bool {
-	for _, ext := range mediaExtensions {
-		if strings.HasSuffix(fileName, "."+ext) {
-			return true
-		}
-	}
-	return false
-}
-
 type MetaData struct {
 	Title       *string   `json:"Title"`
 	Description *string   `json:"Description"`
@@ -95,11 +75,11 @@ func newPost(postTitle string) Post {
 	post.ID = &postID
 
 	// post.LastUpdated
-	if info, err := os.Stat("posts/" + *post.Title); err == nil {
+	if info, err := os.Stat("/posts/" + *post.Title); err == nil {
 		lastUpdated := info.ModTime()
 		post.LastUpdated = &lastUpdated
 	} else {
-		log.Fatal("Could not read the content file: " + err.Error())
+		log.Fatal("Could not read the post directory file: " + err.Error())
 	}
 
 	// post.MetaData
@@ -157,6 +137,7 @@ func newPost(postTitle string) Post {
 }
 
 func buildPostList() {
+	// For each directory in /posts/, use the directory title to build a post object & build a post list.
 	if err = filepath.WalkDir("posts", func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
 			log.Fatal("Error(1) walking the posts directory: ", err)
@@ -256,10 +237,32 @@ func displayPost(post Post) {
 
 func main() {
 	buildPostList()
-	http.HandleFunc("/", serveCustomResources)
-	http.HandleFunc("/posts/", servePost)
 	if err = http.ListenAndServe(":8080", nil); err != nil {
 		log.Fatalf("Failed to start server: %v", err)
 	}
+	http.HandleFunc("/", serveCustomResources)
+	http.HandleFunc("/posts/", servePost)
 	select {}
+}
+
+// ---------- UTILITIES ----------
+
+func pathExists(path string) (bool, error) {
+	_, err := os.Stat(path)
+	if err == nil {
+		return true, nil
+	}
+	if os.IsNotExist(err) {
+		return false, nil
+	}
+	return false, err
+}
+
+func isMediaFile(fileName string) bool {
+	for _, ext := range mediaExtensions {
+		if strings.HasSuffix(fileName, "."+ext) {
+			return true
+		}
+	}
+	return false
 }

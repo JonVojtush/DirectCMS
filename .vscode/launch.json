@@ -5,10 +5,10 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "WebApp(WASM_via_Go)",
+      "name": "DirectCMS",
       "type": "chrome",
       "request": "launch",
-      "preLaunchTask": "clean+build",
+      "preLaunchTask": "build",
       "url": "http://localhost:8080/web/index.html",
       "webRoot": "http://localhost:8080/web",
     }
