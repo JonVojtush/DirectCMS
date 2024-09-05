@@ -44,13 +44,16 @@ func serveCustomResources(w http.ResponseWriter, r *http.Request) {
 	basePath := "/custom/"
 	files := []string{"logo.*", "sitemap.xml", "custom.css", "custom.js", "favicon.*"}
 
-	for _, file := range files {
-		filePath := filepath.Join(basePath, file)
-		if exists, err := pathExists(filePath); err == nil && exists {
+	for _, pattern := range files {
+		matches, err := filepath.Glob(filepath.Join(basePath, pattern))
+		if err != nil {
+			log.Println("Error checking existence of pattern " + pattern + ": " + err.Error())
+			continue
+		}
+
+		for _, filePath := range matches {
 			http.ServeFile(w, r, filePath)
 			return
-		} else {
-			log.Println("Error checking existence of " + filePath + ": " + err.Error())
 		}
 	}
 
