@@ -1,44 +1,44 @@
 package main
 
 import (
-	"encoding/json"
-	"fmt"
-	"io/fs"
+	_ "encoding/json"
+	_ "fmt"
+	_ "io/fs"
 	"log"
 	"net/http"
 	"os"
 	"path/filepath"
-	"regexp"
-	"strings"
-	"syscall/js"
-	"time"
+	_ "regexp"
+	_ "strings"
+	_ "syscall/js"
+	_ "time"
 )
 
 var (
-	err             error
-	logFile         *os.File
-	document        = js.Global().Get("document")
-	postList        []Post
-	imageExtensions = []string{"jpg", "jpeg", "png", "gif", "webp"}
-	videoExtensions = []string{"mp4", "avi", "mov", "webm"}
-	mediaExtensions = append(imageExtensions, videoExtensions...)
+	err     error
+	logFile *os.File
+	// document = js.Global().Get("document")
+	// postList        []Post
+	// imageExtensions = []string{"jpg", "jpeg", "png", "gif", "webp"}
+	// videoExtensions = []string{"mp4", "avi", "mov", "webm"}
+	// mediaExtensions = append(imageExtensions, videoExtensions...)
 )
 
-type MetaData struct {
+/* type MetaData struct {
 	Title       *string   `json:"Title"`
 	Description *string   `json:"Description"`
 	Keywords    []*string `json:"Keywords"`
 	Author      *string   `json:"Author"`
-}
+} */
 
-type Post struct {
+/* type Post struct {
 	Title       *string    `json:"Title"`
 	ID          *string    `json:"ID"`
 	LastUpdated *time.Time `json:"Updated"`
 	MetaData    *MetaData  `json:"MetaData"`
 	Content     *string    `json:"Content"`
 	Media       []*string  `json:"Media"`
-}
+} */
 
 func serveCustomResources(w http.ResponseWriter, r *http.Request) {
 	basePath := "/custom/"
@@ -61,7 +61,7 @@ func serveCustomResources(w http.ResponseWriter, r *http.Request) {
 	http.NotFound(w, r)
 }
 
-func newPost(postTitle string) Post {
+/* func newPost(postTitle string) Post {
 	var (
 		post           Post
 		mediaFileNames []*string
@@ -79,7 +79,7 @@ func newPost(postTitle string) Post {
 	post.ID = &postID
 
 	// post.LastUpdated
-	if info, err := os.Stat("/posts/" + *post.Title); err == nil {
+	if info, err := os.Stat("/user/posts/" + *post.Title); err == nil {
 		lastUpdated := info.ModTime()
 		post.LastUpdated = &lastUpdated
 	} else {
@@ -97,7 +97,7 @@ func newPost(postTitle string) Post {
 	post.MetaData = &metaData
 
 	// post.Content
-	contentPath := filepath.Join("posts", *post.ID, "content.md")
+	contentPath := filepath.Join("posts", *post.ID, "content.html")
 	if contentBytes, err = os.ReadFile(contentPath); err != nil {
 		fmt.Println("Error reading file:", err)
 	}
@@ -143,9 +143,9 @@ func newPost(postTitle string) Post {
 	post.Media = mediaFileNames
 
 	return post
-}
+} */
 
-func buildPostList() {
+/* func buildPostList() {
 	// Walk through the posts directory and create a post object for each directory
 	if err = filepath.WalkDir("posts", func(path string, entry fs.DirEntry, err error) error {
 		if err != nil {
@@ -161,9 +161,9 @@ func buildPostList() {
 	}); err != nil {
 		log.Println("Error(2) walking the posts directory: " + err.Error())
 	}
-}
+} */
 
-func servePost(w http.ResponseWriter, r *http.Request) {
+/* func servePost(w http.ResponseWriter, r *http.Request) {
 	var (
 		err        error
 		mediaFiles []fs.DirEntry
@@ -206,11 +206,11 @@ func servePost(w http.ResponseWriter, r *http.Request) {
 	}
 
 	displayPost(postList[postIndex]) // Display the post content
-}
+} */
 
 // TODO: buildNav()
 
-func displayPost(post Post) {
+/* func displayPost(post Post) {
 	var (
 		postContainer    js.Value
 		hasFeaturedMedia bool
@@ -245,7 +245,7 @@ func displayPost(post Post) {
 		displayedContent += `<div id="content">` + *post.Content + `</div>`
 	}
 	postContainer.Set("innerHTML", displayedContent)
-}
+} */
 
 func main() {
 	if logFile, err = os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o666); err != nil {
@@ -256,19 +256,19 @@ func main() {
 	defer logFile.Close()  // Ensure the file is closed when done
 	log.SetOutput(logFile) // Set the log output to the log file
 
-	buildPostList()
+	// buildPostList()
 
 	if err = http.ListenAndServe(":8080", nil); err != nil {
 		log.Println("Failed to start server: " + err.Error())
 	}
 	http.HandleFunc("/", serveCustomResources)
-	http.HandleFunc("/posts/", servePost)
+	// http.HandleFunc("/posts/", servePost)
 	select {}
 }
 
 // ---------- UTILITIES ----------
 
-func pathExists(path string) (bool, error) {
+/* func pathExists(path string) (bool, error) {
 	_, err := os.Stat(path)
 	if err == nil {
 		return true, nil
@@ -277,13 +277,13 @@ func pathExists(path string) (bool, error) {
 		return false, nil
 	}
 	return false, err
-}
+} */
 
-func isMediaFile(fileName string) bool {
+/* func isMediaFile(fileName string) bool {
 	for _, ext := range mediaExtensions {
 		if strings.HasSuffix(fileName, "."+ext) {
 			return true
 		}
 	}
 	return false
-}
+} */
