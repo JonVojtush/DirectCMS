@@ -6,7 +6,7 @@
   * **User-agent**: *
   * **Disallow**: /media/
   * **Allow**: /posts/
-  * **Sitemap**: https://yourdomain.com/sitemap.xml
+  * **Sitemap**: https://domain.com/sitemap.xml
 
 ---
 
