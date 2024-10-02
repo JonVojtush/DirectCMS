@@ -1,3 +1,3 @@
 module github.com/JonVojtush/DirectCMS
 
-go 1.22.6
+go 1.19

@@ -250,11 +250,11 @@ func serveCustomResources(w http.ResponseWriter, r *http.Request) {
 func main() {
 	if logFile, err = os.OpenFile("app.log", os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0o666); err != nil {
 		log.Println("Failed to open or create log file: " + err.Error())
-		log.SetOutput(os.Stdout) // Fallback to stdout if log file can't be opened
+		log.SetOutput(os.Stdout)
 		return
 	}
-	defer logFile.Close()  // Ensure the file is closed when done
-	log.SetOutput(logFile) // Set the log output to the log file
+	defer logFile.Close()
+	log.SetOutput(logFile)
 
 	// buildPostList()
 
