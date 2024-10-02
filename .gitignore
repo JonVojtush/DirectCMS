@@ -9,3 +9,6 @@
 # Dependencies
 vendor/
 web/wasm_exec.js
+*.mod
+*.sum
+*.work
