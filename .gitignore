@@ -3,7 +3,7 @@
 *.exe~
 *.bin
 *.bin~
-*.wasm
+#*.wasm
 *.log
 
 # Dependencies
