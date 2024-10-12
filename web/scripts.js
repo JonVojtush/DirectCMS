@@ -3,17 +3,6 @@
 let wasm;
 const go = new Go();
 
-function setEventListeners() {
-  document.addEventListener("DOMContentLoaded", function () {
-    /* let postList = fetchPostList();
-    buildNav(postList);
-
-    // Automatically load the home page by default
-    fetchPost('home');
-    displayPost('home'); */
-  });
-}
-
 function init(wasmObj) {
   go.run(wasmObj.instance);
   setEventListeners();
